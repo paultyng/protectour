@@ -1,0 +1,7 @@
+{
+  "name": "aws-monitoring",
+  "role": "arn:aws:iam::815528777639:role/aws-monitoring",
+  "memory": 512,
+  "runtime": "nodejs",
+  "timeout": 120
+}
