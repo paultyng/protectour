@@ -1,13 +1,11 @@
-var aws = require('aws-sdk');
-var async = require('async');
-var moment = require('moment');
+import aws from 'aws-sdk';
+import async from 'async';
+import moment from 'moment';
 
-var ec2 = new aws.EC2({apiVersion: '2014-10-01'});
+const ec2 = new aws.EC2({apiVersion: '2014-10-01'});
+const defaultTimeToLive = moment.duration(4, 'hours');
 
-var defaultTimeToLive = moment.duration(4, 'hours');
-
-exports.handle = function (event, context) {
-
+export default function(event, context) {
   function shouldStop(instance) {
     var timeToLive = moment.duration(defaultTimeToLive.asMilliseconds());
     var ttlFound = false;
@@ -69,6 +67,7 @@ exports.handle = function (event, context) {
           //    next(null);
           //  }
           //});
+          next(null);
         }
         else {
           console.log("No instances need to be stopped");

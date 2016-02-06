@@ -1,7 +1,12 @@
 {
   "name": "aws-monitoring",
   "role": "arn:aws:iam::815528777639:role/aws-monitoring",
-  "memory": 512,
+  "memory": 128,
   "runtime": "nodejs",
-  "timeout": 120
+  "timeout": 30,
+  "handler": "lib.default",
+  "hooks": {
+    "build": "cp ../../package.json package.json && npm install --production && ../../node_modules/.bin/babel src -d lib",
+    "clean": "rm -fr package.json lib node_modules"
+  }
 }
