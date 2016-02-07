@@ -8,7 +8,9 @@
     "apex.js": "^1.1.0",
     "async": "^1.5.2",
     "aws-sdk": "^2.2.33",
+    "axios": "^0.9.1",
     "babel-polyfill": "^6.3.14",
+    "bluebird": "^3.2.2",
     "moment": "^2.11.2"
   },
   "devDependencies": {
