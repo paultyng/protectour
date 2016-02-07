@@ -10,8 +10,11 @@ global.Promise = Bluebird;
 
 const region = new aws.Config().region;
 
-const ec2 = new aws.EC2({apiVersion: '2014-10-01'});
+const ec2 = new aws.EC2({ apiVersion: '2014-10-01' });
 Bluebird.promisifyAll(Object.getPrototypeOf(ec2));
+
+const cloudTrail = new aws.CloudTrail({ apiVersion: '2013-11-01' });
+Bluebird.promisifyAll(Object.getPrototypeOf(cloudTrail));
 
 const defaultTimeToLive = moment.duration(4, 'hours');
 const tagPrefix = "ua";
@@ -120,19 +123,49 @@ export default λ((e, ctx) => {
 
       return { id: instance.InstanceId, instance, warnings, errors, stop };
     })
+    .map(instance => {
+      return cloudTrail.lookupEventsAsync({
+        LookupAttributes: [
+          //{ AttributeKey: 'EventName', AttributeValue: 'RunInstances' },
+          //{ AttributeKey: 'ResourceType', AttributeValue: 'Instance' },
+          { AttributeKey: 'ResourceName', AttributeValue: instance.id },
+        ],
+      })
+        .then(data => {
+          const event = data.Events.filter(e => e.EventName === 'RunInstances')[0];
+
+          if(event) {
+            instance.user = event.Username;
+          }
+
+          return instance;
+        });
+    })
     .then(instances => {
       const attachments = [];
 
-      instances.forEach(({ id, instance, warnings, errors, stop }) => {
+      instances.forEach(({ id, instance, user, warnings, errors, stop }) => {
         const name = instanceTagMap(instance).get('Name');
+
+        const fields = []
+
+        if(user) {
+          fields.push({
+            title: 'Run By',
+            value: user,
+            short: true,
+          })
+        }
+
         const title = `:ec2: Instance ${id}` + (name ? ` (${name})` : '');
-        const title_link = `https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${id};sort=instanceState`;
+        const title_link = `https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${id}`;
         const mrkdwn_in = ['pretext', 'text'];
 
         if(warnings.length > 0) {
           let text = warnings.join('\n');
 
           attachments.push({
+            fields,
             title,
             title_link,
             mrkdwn_in,
@@ -146,6 +179,7 @@ export default λ((e, ctx) => {
           let text = errors.join('\n');
 
           attachments.push({
+            fields,
             title,
             title_link,
             mrkdwn_in,
@@ -159,6 +193,7 @@ export default λ((e, ctx) => {
         /*
         if(stop) {
           attachments.push({
+            fields,
             title,
             title_link,
             text: `Stopping Instance (TTL exhausted or absent)`,
