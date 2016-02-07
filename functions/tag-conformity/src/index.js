@@ -41,10 +41,10 @@ function validateTagMap(tagMap) {
     key = tagKey(key);
 
     if(!tagMap.has(key)) {
-      messages.push(`missing tag '${key}'`);
+      messages.push(`missing tag *${key}*`);
     }
     else if(!pattern.test(tagMap.get(key))) {
-      messages.push(`malformed tag '${key}'`);
+      messages.push(`malformed tag *${key}*`);
     }
   }
 
@@ -55,7 +55,7 @@ function slackInstance(instance) {
   const tagMap = instanceTagMap(instance);
   const name = tagMap.get('Name');
 
-  return `<https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${instance.InstanceId};sort=instanceState|${name} _${instance.InstanceId}_>`;
+  return ;
 }
 
 export default λ((e, ctx) => {
@@ -124,17 +124,52 @@ export default λ((e, ctx) => {
       const attachments = [];
 
       instances.forEach(({ id, instance, warnings, errors, stop }) => {
-        // TODO: lookup instance.RequesterId for shaming...
-        attachments.push(...warnings.map(m => ({ fallback: `Warning: '${id}' ${m}`, text: `*Warning:* ${slackInstance(instance)} ${m}`, color: 'warning', mrkdwn_in: ['text'] })));
-        attachments.push(...errors.map(m => ({ fallback: `Error: '${id}' ${m}`, text: `*Error:* ${slackInstance(instance)} ${m}`, color: 'danger', mrkdwn_in: ['text'] })));
+        const name = instanceTagMap(instance).get('Name');
+        const title = `Instance ${id}` + (name ? ` (${name})` : '');
+        const title_link = `https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${id};sort=instanceState`;
+        const mrkdwn_in = ['pretext', 'text'];
 
-        if(stop) {
-          attachments.push({ fallback: `Stopping: '${id}'`, text: `*Stopping:* ${slackInstance(instance)}`, color: 'danger', mrkdwn_in: ['text'] });
+        if(warnings.length > 0) {
+          let text = warnings.join('\n');
+
+          attachments.push({
+            title,
+            title_link,
+            mrkdwn_in,
+            fallback: text,
+            text,
+            color: 'warning',
+          });
         }
+
+        if(errors.length > 0) {
+          let text = errors.join('\n');
+
+          attachments.push({
+            title,
+            title_link,
+            mrkdwn_in,
+            fallback: text,
+            text,
+            color: 'danger',
+          });
+        }
+
+        // #TODO: handle instance stopping
+        /*
+        if(stop) {
+          attachments.push({
+            title,
+            title_link,
+            text: `Stopping Instance (TTL exhausted or absent)`,
+            color: 'danger',
+          });
+        }
+        */
       });
 
       return axios
-        .post(SLACK_WEBHOOK_URL, { text: 'Successfully reviewed tags of all instanced.', attachments });
+        .post(SLACK_WEBHOOK_URL, { mrkdwn: true, text: `Successfully reviewed tags of all running instances in *${region}*.`, attachments });
     })
     .then(() => console.log('Successfully reviewd tags of all instances.'));
 });
