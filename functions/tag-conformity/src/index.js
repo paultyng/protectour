@@ -17,7 +17,7 @@ const defaultTimeToLive = moment.duration(4, 'hours');
 const tagPrefix = "ua";
 const requiredTags = {
   "environment": /^(production|staging|development|integration)$/,
-  "product": /^(b2c|b2b)$/,
+  "product": /^(b2c|b2b|shared)$/,
   "role": /^.+$/,
   "team": /^.+$/
 }
