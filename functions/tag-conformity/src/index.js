@@ -44,7 +44,7 @@ function validateTagMap(tagMap) {
       messages.push(`missing tag *${key}*`);
     }
     else if(!pattern.test(tagMap.get(key))) {
-      messages.push(`malformed tag *${key}*`);
+      messages.push(`malformed tag *${key}* _${pattern}_`);
     }
   }
 
