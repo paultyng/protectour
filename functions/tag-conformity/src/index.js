@@ -125,7 +125,7 @@ export default λ((e, ctx) => {
 
       instances.forEach(({ id, instance, warnings, errors, stop }) => {
         const name = instanceTagMap(instance).get('Name');
-        const title = `Instance ${id}` + (name ? ` (${name})` : '');
+        const title = `:ec2: Instance ${id}` + (name ? ` (${name})` : '');
         const title_link = `https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${id};sort=instanceState`;
         const mrkdwn_in = ['pretext', 'text'];
 
@@ -169,7 +169,7 @@ export default λ((e, ctx) => {
       });
 
       return axios
-        .post(SLACK_WEBHOOK_URL, { mrkdwn: true, text: `Successfully reviewed tags of all running instances in *${region}*.`, attachments });
+        .post(SLACK_WEBHOOK_URL, { username: 'AWS Monitoring', mrkdwn: true, text: `Successfully reviewed tags of all running instances in *${region}*.`, attachments });
     })
     .then(() => console.log('Successfully reviewd tags of all instances.'));
 });
