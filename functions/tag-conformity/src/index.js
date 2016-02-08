@@ -7,5 +7,5 @@ export default λ(() => {
 
   return job
     .run()
-    .then(() => console.log('Successfully reviewed tags of all instances.'));
+    .then(() => console.log('Successfully reviewed tags.'));
 });
