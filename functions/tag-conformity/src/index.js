@@ -9,7 +9,7 @@ import { requiredTags, slackWebhookUrl, permanentTagKey, ttlHoursTagKey } from '
 //update global promise implementation
 global.Promise = Bluebird;
 
-const region = new aws.Config().region;
+const region = aws.config.region;
 
 const ec2 = new aws.EC2({ apiVersion: '2014-10-01' });
 Bluebird.promisifyAll(Object.getPrototypeOf(ec2));
