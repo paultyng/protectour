@@ -103,39 +103,13 @@ export default λ((e, ctx) => {
 
       return { id: instance.InstanceId, instance, warnings, errors, stop };
     })
-    .map(instance => {
-      return cloudTrail.lookupEventsAsync({
-        LookupAttributes: [
-          //{ AttributeKey: 'EventName', AttributeValue: 'RunInstances' },
-          //{ AttributeKey: 'ResourceType', AttributeValue: 'Instance' },
-          { AttributeKey: 'ResourceName', AttributeValue: instance.id },
-        ],
-      })
-        .then(data => {
-          const event = data.Events.filter(e => e.EventName === 'RunInstances')[0];
-
-          if(event) {
-            instance.user = event.Username;
-          }
-
-          return instance;
-        });
-    })
     .then(instances => {
       const attachments = [];
 
-      instances.forEach(({ id, instance, user, warnings, errors, stop }) => {
+      instances.forEach(({ id, instance, warnings, errors, stop }) => {
         const name = instanceTagMap(instance).get('Name');
 
         const fields = []
-
-        if(user) {
-          fields.push({
-            title: 'Run By',
-            value: user,
-            short: true,
-          })
-        }
 
         const title = `:ec2: Instance ${id}` + (name ? ` (${name})` : '');
         const title_link = `https://console.aws.amazon.com/ec2/v2/home?region=${region}#Instances:instanceId=${id}`;
