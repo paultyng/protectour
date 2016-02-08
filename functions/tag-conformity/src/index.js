@@ -4,6 +4,7 @@ import λ from 'apex.js'
 import moment from 'moment';
 import Bluebird from 'bluebird';
 import axios from 'axios';
+import { requiredTags, slackWebhookUrl, permanentTagKey, ttlHoursTagKey } from './config';
 
 //update global promise implementation
 global.Promise = Bluebird;
@@ -15,19 +16,6 @@ Bluebird.promisifyAll(Object.getPrototypeOf(ec2));
 
 const cloudTrail = new aws.CloudTrail({ apiVersion: '2013-11-01' });
 Bluebird.promisifyAll(Object.getPrototypeOf(cloudTrail));
-
-const defaultTimeToLive = moment.duration(4, 'hours');
-const tagPrefix = "ua";
-const requiredTags = {
-  "environment": /^(production|staging|development|integration)$/,
-  "product": /^(b2c|b2b|shared)$/,
-  "role": /^.+$/,
-  "team": /^.+$/
-}
-
-function tagKey(tag) {
-  return `${tagPrefix}:${tag}`;
-}
 
 function instanceTagMap(instance) {
   return instance.Tags.reduce((map, tag) => {
@@ -41,8 +29,6 @@ function validateTagMap(tagMap) {
 
   // Check all required tags for existence and pattern match
   for(let [key, pattern] of Object.entries(requiredTags)) {
-    key = tagKey(key);
-
     if(!tagMap.has(key)) {
       messages.push(`missing tag *${key}*`);
     }
@@ -76,12 +62,6 @@ export default λ((e, ctx) => {
   //context.identity (Object)
   //context.clientContext (Object)
 
-  const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-
-  if(SLACK_WEBHOOK_URL == null) {
-    throw new Error('SLACK_WEBHOOK_URL not set.');
-  }
-
   return ec2.describeInstancesAsync({
     Filters: [
       { Name: 'instance-state-name', Values: ['running'] }
@@ -97,17 +77,17 @@ export default λ((e, ctx) => {
       let stop = true;
 
       // Check TTL
-      if(tagMap.has(tagKey('permanent'))) {
+      if(tagMap.has(permanentTagKey)) {
         stop = false;
       }
-      else if(tagMap.has(tagKey('ttl-hours'))) {
-        const value = parseFloat(tagMap.get(tagKey('ttl-hours')));
+      else if(tagMap.has(ttlHoursTagKey)) {
+        const value = parseFloat(tagMap.get(ttlHoursTagKey));
 
         if(Number.isNaN(value)) {
           errors.push(`'${value}' is an invalid TTL.`);
         }
         else {
-          const ttl = moment.duration(tagMap.get(tagKey('ttl-hours')), 'hours');
+          const ttl = moment.duration(tagMap.get(ttlHoursTagKey), 'hours');
           const upTime = new Date().getTime() - instance.LaunchTime.getTime();
 
           if (upTime < ttl.asMilliseconds()) {
@@ -204,7 +184,7 @@ export default λ((e, ctx) => {
       });
 
       return axios
-        .post(SLACK_WEBHOOK_URL, { username: 'AWS Monitoring', mrkdwn: true, text: `Successfully reviewed tags of all running instances in *${region}*.`, attachments });
+        .post(slackWebhookUrl, { username: 'AWS Monitoring', mrkdwn: true, text: `Successfully reviewed tags of all running instances in *${region}*.`, attachments });
     })
     .then(() => console.log('Successfully reviewd tags of all instances.'));
 });
