@@ -1,11 +1,11 @@
-const permanentTagKey = process.env.PERMANENT_TAG_KEY || "ua:permanent";
-const ttlHoursTagKey = process.env.TTL_HOURS_TAG_KEY || "ua:ttl-hours";
+const permanentTagKey = process.env.PERMANENT_TAG_KEY || "permanent";
+const ttlHoursTagKey = process.env.TTL_HOURS_TAG_KEY || "ttl-hours";
 
 const requiredTags = {
-  "ua:environment": /^(production|staging|development|integration)$/,
-  "ua:product": /^(b2c|b2b|shared)$/,
-  "ua:role": /^.+$/,
-  "ua:team": /^.+$/
+  "environment": /^(production|staging|development|integration|shared)$/,
+  "product": /^(b2c|b2b|shared)$/,
+  "role": /^.+$/,
+  "team": /^.+$/
 }
 
 const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
