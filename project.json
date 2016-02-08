@@ -4,9 +4,9 @@
   "memory": 128,
   "runtime": "nodejs",
   "timeout": 30,
-  "handler": "lib.default",
+  "handler": "build.default",
   "hooks": {
-    "build": "cp ../../package.json package.json && npm install --production && ../../node_modules/.bin/babel src -d lib",
-    "clean": "rm -fr package.json lib node_modules"
+    "build": "cp -r ../../lib ./ && cp ../../package.json package.json && npm install --production && ../../node_modules/.bin/babel lib src -d build",
+    "clean": "rm -fr package.json build lib node_modules"
   }
 }
