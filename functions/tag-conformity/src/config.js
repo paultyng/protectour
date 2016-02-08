@@ -5,7 +5,7 @@ const requiredTags = {
   "environment": /^(production|staging|development|integration|shared)$/,
   "product": /^(b2c|b2b|shared)$/,
   "role": /^.+$/,
-  "team": /^.+$/
+  "owner": /^.+$/
 }
 
 const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
