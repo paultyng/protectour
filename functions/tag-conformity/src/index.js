@@ -1,6 +1,6 @@
 import 'babel-polyfill';
 import λ from 'apex.js'
-import TagConformity from './tag_conformity';
+import TagConformity from './rules/tag_conformity';
 
 export default λ(() => {
   const job = new TagConformity(process.env.SLACK_WEBHOOK_URL);
