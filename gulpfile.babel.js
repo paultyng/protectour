@@ -8,6 +8,7 @@ import aws from 'aws-sdk';
 
 import TagConformity from './lib/rules/tag_conformity';
 import EmptyVpc from './lib/rules/empty_vpc';
+import TrustedAdvisor from './lib/rules/trusted_advisor';
 
 const region = 'us-east-1';
 
@@ -26,3 +27,10 @@ gulp.task('empty-vpc', (cb) => {
     .then(() => cb())
     .error(err => cb(err));
 });
+
+gulp.task('trusted-advisor', (cb) => {
+  const rule = new TrustedAdvisor();
+  rule.run()
+    .then(() => cb())
+    .error(err => cb(err));
+})
