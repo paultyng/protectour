@@ -10,6 +10,10 @@ import TagConformity from './lib/rules/tag_conformity';
 import EmptyVpc from './lib/rules/empty_vpc';
 import TrustedAdvisor from './lib/rules/trusted_advisor';
 
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const region = 'us-east-1';
 
 aws.config.update({ region });
