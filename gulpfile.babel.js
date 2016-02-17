@@ -9,6 +9,7 @@ import aws from 'aws-sdk';
 import TagConformity from './lib/rules/tag_conformity';
 import EmptyVpc from './lib/rules/empty_vpc';
 import TrustedAdvisor from './lib/rules/trusted_advisor';
+import EstimatedCharge from './lib/rules/estimated_charge';
 
 import dotenv from 'dotenv';
 
@@ -37,4 +38,11 @@ gulp.task('trusted-advisor', (cb) => {
   rule.run()
     .then(() => cb())
     .error(err => cb(err));
-})
+});
+
+gulp.task('estimated-charge', (cb) => {
+  const rule = new EstimatedCharge();
+  rule.run()
+    .then(() => cb())
+    .error(err => cb(err));
+});
